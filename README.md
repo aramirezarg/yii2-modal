@@ -1,6 +1,6 @@
-Magic select
+Magic Modal
 ============
-Magic Select
+Magic Modal
 
 Installation
 ------------
@@ -10,13 +10,13 @@ The preferred way to install this extension is through [composer](http://getcomp
 Either run
 
 ```
-php composer.phar require --prefer-dist magicsoft/yii2-select "*"
+php composer.phar require --prefer-dist magicsoft/yii2-modal "*"
 ```
 
 or add
 
 ```
-"magicsoft/yii2-select": "*"
+"magicsoft/yii2-modal": "*"
 ```
 
 to the require section of your `composer.json` file.
