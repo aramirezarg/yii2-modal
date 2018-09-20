@@ -3,11 +3,11 @@
  * @license http://www.apache.org/licenses/LICENSE-2.0
  */
 
-namespace magicsoft\modal\assets;
+namespace magicsoft\modal;
 
 use yii\web\AssetBundle;
 
-class MagicAsset extends AssetBundle
+class MagicModalAsset extends AssetBundle
 {
     public $sourcePath = '@vendor/magicsoft/src/assets/source';
 
