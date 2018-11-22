@@ -13,19 +13,14 @@ class MagicModalAsset extends AssetBundle
 
     public $js = [
 		'js/magic.modal.js',
-        'js/dependencies/accounting.js',
 		'js/dependencies/magic.helper.js',
 		'js/dependencies/magic.message.js',
 		'js/dependencies/spin.js',
 		'js/dependencies/jquery.form.js',
 		'js/dependencies/beep.js',
-		'print/print.js',
-        'fingerprint/fingerprint.js',
-        'fingerprint/get-finger-print.js'
     ];
 
     public $css = [
-        'css/fileinput.min.css',
         'css/modal.css',
     ];
 

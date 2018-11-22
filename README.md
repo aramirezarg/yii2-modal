@@ -27,5 +27,22 @@ Usage
 
 Once the extension is installed, simply use it in your code by  :
 
+You can use this modal by attributes:
 ```php
-<?= \magicsoft\select\AutoloadExample::widget(); ?>```
+<?php
+    Html::a(
+        '<span class="glyphicon glyphicon-plus"></span> Create',
+        ['country/create'],
+        [
+            'id' => 'magic-modal',
+            'onClick' => 'return false;',
+            'class' => 'btn btn-success',
+            'ajaxOptions' => '{"confirmToLoad":true,"confirmToSend":true"confirmToClose":true}',
+            'jsFunctions' => ''
+        ]
+    )
+    //ajaxOptions and jsFunctions are optional.
+?>
+
+Or you can use this modal by js:
+myModal = new MagicModal(url, ajaxOptions, jsFunctions, 'myModal')
