@@ -217,6 +217,10 @@ function isFullScreen(){
         !document.msFullscreenElement);
 }
 
+objectIsSet = function (object){
+    return (object !== undefined && object !== false && object !== '');
+};
+
 function isJSON(text){
     try {
         var _json = JSON.stringify(text);
@@ -230,6 +234,21 @@ function isJSON(text){
     }
     return true;
 }
+
+checkJSON = function(m) {
+
+    if (typeof m == 'object') {
+        try{ m = JSON.stringify(m); }
+        catch(err) { return false; } }
+
+    if (typeof m == 'string') {
+        try{ m = JSON.parse(m); }
+        catch (err) { return false; } }
+
+    if (typeof m != 'object') { return false; }
+    return true;
+
+};
 
 function toggleFullScreen() {
     if (!document.fullscreenElement &&    // alternative standard method

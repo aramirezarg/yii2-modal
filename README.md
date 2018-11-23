@@ -46,3 +46,6 @@ You can use this modal by attributes:
 
 Or you can use this modal by js:
 myModal = new MagicModal(url, ajaxOptions, jsFunctions, 'myModal')
+
+**Pending documentation**
+**Pending load other library**

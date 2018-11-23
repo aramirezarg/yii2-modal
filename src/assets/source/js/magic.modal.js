@@ -78,11 +78,11 @@ MagicModal.prototype.setInactiveWhenClose = function () {this.activeWhenClose = 
 MagicModal.prototype.setUrl = function (url) {this.url = url; };
 MagicModal.prototype.unSetToConfirmClose = function () {this.confirmToClose = false; };
 
-MagicModal.prototype.execute = function () {loading(true);
-    this.sending = false;
+MagicModal.prototype.execute = function () {
+    loading(true);
+    self = this
+    self.sending = false;
     let params = 'modal:true, modal_name:' + this.id;
-
-    self = this;
 
     $.get(
         self.url,
@@ -142,8 +142,12 @@ MagicModal.prototype.construct = function (data) {
     setTimeout( this.setFocus(), 100);
 };
 
+MagicModal.prototype.getForm = function(){
+    return  $( "div#" + this.id ).find('form');
+}
+
 MagicModal.prototype.setFocus = function(){
-    $( "div#" + this.id ).find('form').find('input, textarea, select')
+    this.getForm().find('input, textarea, select')
         .not('input[type=hidden],input[type=button],input[type=submit],input[type=reset],input[type=image],button')
         .filter(':enabled:visible:first')
         .focus();
@@ -181,19 +185,17 @@ MagicModal.prototype.appendJS = function () {
     _modal.find( '.for-buttons-modal' ).append(self.htmlModalHeader());
 
     _modal.find( '.footer-form' ).remove();
+
     if(self.getSendForm()){
         _modal.find( '.footer-form' ).remove();
     }else{
         _modal.find( '#execute_form' ).remove();
         _modal.find( '#cancel_modal' ).html( 'Close ' );
     }
-    $(document).on('beforeSubmit', ".comments-main-form form, .comment-form form", function (event, messages) {
-        $(this).find("[type=submit]").prop('disabled', true);
-    });
 
     _modal.find('form').append("\
          <script> \
-                let " + self.id + "_load = new LoadModal('" + self.id + "');\
+            " + self.id + "_load = new LoadModal('" + self.id + "');\
             $(function() {\
 				let div = $( 'div#" + self.id + "' );\
                 div.find( 'form' ).attr('onSubmit','setTimeout(' + self.id + '.disabledSubmit(), 0);setTimeout(" + self.id + "_load.load());');\
@@ -201,13 +203,13 @@ MagicModal.prototype.appendJS = function () {
                 let afterExecute = " + self.getAfterExecute() + ";\
                 let modal = '" + self.id + "';\
                 let options = { \
-                    url:        form.attr( 'action' ), \
-                    success:    function(data, textStatus, jqXHR) {\
+                    url: form.attr( 'action' ), \
+                    success: function(data, textStatus, jqXHR) {\
 						loading(false);\
-						setTimeout( modal + '.enabledSubmit()', 0 );\
+						setTimeout(modal + '.enabledSubmit()', 0 );\
 						endRequest(modal, data, afterExecute);\
                     },\
-                    error:      function(jqXHR, textStatus, errorThrown){\
+                    error: function(jqXHR, textStatus, errorThrown){\
                         loading(false);\
                         setTimeout( modal + '.enabledSubmit()', 0 );\
                         if( jqXHR.status !== 302 ){\
@@ -224,48 +226,6 @@ MagicModal.prototype.appendJS = function () {
         </script>"
     );
 };
-
-function endSubmitForm(modal, afterExecute){
-    setTimeout( modal + '.executeClose()', 0 );
-    if(!afterExecute === false) setTimeout( afterExecute, 0 );
-}
-
-function endRequest(modal, data, afterExecute){
-    if (checkJSON(data)) {
-        if(data.error === true){
-            new MagicMessage(
-                'error',
-                data.data.title,
-                data.data.data
-            )
-        }else{
-            if(data.setUrl === true){
-                if(data.close_parent === false){
-                    temporalModal = new MagicModal(data.url,'','','temporalModal');
-                }else{
-                    setTimeout( modal + '.setUrl(\"' + data.url + '\")', 0 );
-                    setTimeout( modal + '.unSetToConfirmClose()');
-                    setTimeout( modal + '.setActiveWhenClose()');
-                    setTimeout( modal + '.execute()', 0 );
-                }
-            }else{
-                if(data.magicResponseSet === true){
-                    let attribute = $('#' + data.magic_response_attribute_id);
-                    attribute.append($('<option>', {
-                        value: data.magic_response_attribute_id_value,
-                        text : data.magic_response_attribute_value
-                    }));
-
-                    attribute.val(data.magic_response_attribute_id_value);
-                    attribute.trigger('change');
-                }
-                endSubmitForm(modal, afterExecute);
-            }
-        }
-    }else{
-        endSubmitForm(modal, afterExecute)
-    }
-}
 
 MagicModal.prototype.close = function () {
     if(this.sending) return false;
@@ -301,12 +261,12 @@ MagicModal.prototype.executeClose = function () {
 
 MagicModal.prototype.htmlModalHeader = function(){
     return '\
-        <button onclick="' + this.id + '.refresh()" type="button" class="btn bg-orange btn-flat bnt-refresh" data-toggle="button" aria-pressed="false">\
-            <i class="fa fa-refresh"></i>\
-        </button>\
-        <button onclick="' + this.id + '.close()" type="button" class= "btn bg-red btn-flat">\
-            <i class="glyphicon glyphicon-remove"></i>\
-        </button>'
+    <button onclick="' + this.id + '.refresh()" type="button" class="btn btn-box-tool bnt-refresh" data-toggle="button" aria-pressed="false">\
+        <i class="fa fa-refresh"></i>\
+    </button>\
+    <button onclick="' + this.id + '.close()" type="button" class= "btn btn-box-tool">\
+        <i class="glyphicon glyphicon-remove"></i>\
+    </button>'
 };
 
 MagicModal.prototype.refresh = function(){
@@ -332,21 +292,21 @@ MagicModal.prototype.htmlModalFooter = function(){
     <div class = "">\
         <button type="button" id="execute_form" form = "' + this.id + '"  class = "btn btn-success"> \
             <span class ="glyphicon glyphicon-ok" style="padding-right: 3px"/>\
-            Enviar\
+            Send\
          </button>\
         <button onclick="' + this.id + '.close()" type="button" class= "btn btn-warning" >\
             <span class ="glyphicon glyphicon-ban-circle style="padding-right: 3px"/>\
-            <span id="cancel_modal">Close </span>\
+            <span id="cancel_modal">Close</span>\
         </button>\
     </div>';
 };
 
 MagicModal.prototype.html = function(){
     return '\
-    <div id="' + this.id + '" class="modal fade in" role="dialog" tabindex = "-1" tabindex data-backdrop="static" style="display: block; padding-right: 17px;">\
+    <div id="' + this.id + '" class="modal fade in" role="dialog" tabindex = "-1" data-backdrop="static" style="display: block;">\
         <div class="modal-dialog modal-lg">\
             <div class="modal-content" style = "border-radius: 4px">\
-                <div id="' + this.id + '-modal-body" class="">\
+                <div id="' + this.id + '-modal-body">\
                     <div id="' + this.id + '-modal-content">\
                         <h1 style = "font-size: 80px; text-align: center; color: #F5F5F5">loading...</h1>\
                     </div>\
@@ -361,6 +321,44 @@ MagicModal.prototype.html = function(){
 };
 
 /**EXTRA FUNCTIONS AND OPTIONS**/
+function endSubmitForm(modal, afterExecute){
+    setTimeout( modal + '.executeClose()', 0 );
+    if(!afterExecute === false) setTimeout( afterExecute, 0 );
+}
+
+function endRequest(modal, data, afterExecute){
+    if (checkJSON(data)) {
+        if(data.error === true){
+            new MagicMessage(
+                'error',
+                data.data.title,
+                data.data.data
+            )
+        }else{
+            if(data.setUrl === true){
+                if(data.close_parent === false){
+                    temporalModal = new MagicModal(data.url,'','','temporalModal');
+                }else{
+                    setTimeout( modal + '.setUrl(\"' + data.url + '\")', 0 );
+                    setTimeout( modal + '.unSetToConfirmClose()');
+                    setTimeout( modal + '.setActiveWhenClose()');
+                    setTimeout( modal + '.execute()', 0 );
+                }
+            }else{
+                if(typeof(attribute = $('#' + data.magic_select_attribute)) != "undefined"){
+                    attribute.empty().append($('<option>', {
+                        value: data.magic_select_value,
+                        text: data.magic_select_text
+                    })).val(data.magic_select_value).trigger('change');
+                }
+                endSubmitForm(modal, afterExecute);
+            }
+        }
+    }else{
+        endSubmitForm(modal, afterExecute)
+    }
+}
+
 function removeItemFromArr( arr, item ) {
     return arr.filter( function( e ) {
         return e !== item;
@@ -370,8 +368,10 @@ function removeItemFromArr( arr, item ) {
 function LoadModal(modal) {
     this.modal =  modal;
 }
+
 LoadModal.prototype.load = function(){
     let content = $( 'div#' + this.modal);
+
     let hasError =  content.find( 'form' ).find('.has-error').length;
     lengthContent = content.find( 'form' ).length;
     if(hasError || lengthContent == 0){
