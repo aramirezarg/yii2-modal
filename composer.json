@@ -3,7 +3,7 @@
     "description": "Magic Modal",
     "type": "library",
     "keywords": ["yii2","library"],
-    "homepage": "https://github.com/aramirezarg/magicsoft/yii2-modal",
+    "homepage": "https://github.com/aramirezarg/yii2-modal",
     "license": "Apache-2.0",
     "authors": [
         {
@@ -12,7 +12,8 @@
         }
     ],
     "require": {
-        "yiisoft/yii2": "~2.0.0"
+        "yiisoft/yii2": "~2.0.0",
+        "magicsoft/yii2-form": "*"
     },
     "autoload": {
         "psr-4": {

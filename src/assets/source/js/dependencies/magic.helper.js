@@ -192,11 +192,7 @@ toJSON = function (ajax) {
         json += '"' + JSON_label + '":' + quotation + JSON_property + quotation  + ((i<(pre.length-1)) ? ',' : '');
     }
 
-    try {
-        return jQuery.parseJSON( "{" + json + "}");
-    }catch(err) {
-        return false;
-    }
+    return "{" + json + "}";
 };
 
 createId = function() {

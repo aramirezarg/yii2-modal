@@ -9,21 +9,25 @@ $(document).on('click', '#magic-modal', function (e) {
     let url = (_url = $(this).attr('href')) === undefined ? $(this).attr('url') : _url;
     let ajaxOptions = $(this).attr('ajaxOptions');
     let jsFunctions = $(this).attr('jsFunctions');
+    let params = $(this).attr('data-params');
 
-    window[name] = new MagicModal(url, ajaxOptions, jsFunctions, name);
+    window[name] = new MagicModal(url, ajaxOptions, jsFunctions, name, params);
 });
 /**INIT FROM ATTRIBUTE**/
 
-MagicModal = function (url, ajaxOptions, jsFunctions, name ) {
-    this.id = name;
+MagicModal = function (url, ajaxOptions, jsFunctions, name, params) {
+    this.id = objectIsSet(name) ? name : createId();
     this.sending = false;
     this.url = url;
 
     this.ajaxOptions = objectIsSet(ajaxOptions) ? ajaxOptions : 'send:true,response:true,confirmToLoad:false,confirmToSend:false,confirmToClose:false';
-    this.ajaxOptions = checkJSON(this.ajaxOptions) ? jQuery.parseJSON(this.ajaxOptions) : toJSON(this.ajaxOptions);
+    this.ajaxOptions = jQuery.parseJSON(checkJSON(this.ajaxOptions) ? this.ajaxOptions : toJSON(this.ajaxOptions));
 
     this.jsFunctions = objectIsSet(jsFunctions) ? jsFunctions : 'afterExecute:false,beforeLoad:false,whenClose:false,activeWhenClose:false';
-    this.jsFunctions = checkJSON(this.jsFunctions) ? jQuery.parseJSON(this.jsFunctions) : toJSON(this.jsFunctions);
+    this.jsFunctions = jQuery.parseJSON(checkJSON(this.jsFunctions) ? this.jsFunctions : toJSON(this.jsFunctions));
+
+    params = objectIsSet(params) ? params : '{}';
+    this.params = $.extend(true, jQuery.parseJSON(checkJSON(params) ? params : toJSON(params)), {modal: true, modal_name: this.id});
 
     this.confirmToLoad = objectIsSet(this.ajaxOptions.confirmToLoad) ? this.ajaxOptions.confirmToLoad : false;
     this.confirmToSend = objectIsSet(this.ajaxOptions.confirmToSend) ? this.ajaxOptions.confirmToSend : false;
@@ -54,46 +58,45 @@ MagicModal = function (url, ajaxOptions, jsFunctions, name ) {
     }
 };
 
+MagicModal.prototype.getSendForm = function () {
+    let send = ((this.ajaxOptions.send === undefined || this.ajaxOptions.send === '') ? true : this.ajaxOptions.send);
+    return ( send ? ( ($('#' + this.id).find('form').attr('id') !== undefined)) : send );
+};
+MagicModal.prototype.getAfterExecute = function () {return this.afterExecute;};
+MagicModal.prototype.getBeforeLoad = function () {return this.beforeLoad;};
+MagicModal.prototype.getWhenClose = function () {return this.whenClose;};
+MagicModal.prototype.getUrl = function () {return this.url;};
+
+MagicModal.prototype.setWhenClose = function (value) {this.whenClose = value;};
+MagicModal.prototype.setAfterExecute = function (value) {this.afterExecute = value;};
+MagicModal.prototype.setBeforeLoad = function (value) {this.beforeLoad = value;};
+MagicModal.prototype.setActiveWhenClose = function () {this.activeWhenClose = true;};
+MagicModal.prototype.setInactiveWhenClose = function () {this.activeWhenClose = false;};
+MagicModal.prototype.setUrl = function (url) {this.url = url;};
+
+MagicModal.prototype.unSetToConfirmClose = function () {this.confirmToClose = false;};
+
 MagicModal.prototype.generate = function () {
     Modals.push(this.id);
     $( "body" ).append(this.html());
     setTimeout( this.execute(), 0);
 };
 
-MagicModal.prototype.getSendForm = function () {
-    let send = ((this.ajaxOptions.send === undefined || this.ajaxOptions.send === '') ? true : this.ajaxOptions.send);
-    return ( send ? ( ($('#' + this.id).find('form').attr('id') !== undefined)) : send );
-};
-
-MagicModal.prototype.getAfterExecute = function () { return this.afterExecute; };
-MagicModal.prototype.getBeforeLoad = function () { return this.beforeLoad; };
-MagicModal.prototype.getWhenClose = function () { return this.whenClose; };
-MagicModal.prototype.getUrl = function () { return this.url; };
-
-MagicModal.prototype.setWhenClose = function (value) { this.whenClose = value; };
-MagicModal.prototype.setAfterExecute = function (value) { this.afterExecute = value; };
-MagicModal.prototype.setBeforeLoad = function (value) { this.beforeLoad = value; };
-MagicModal.prototype.setActiveWhenClose = function () {this.activeWhenClose = true; };
-MagicModal.prototype.setInactiveWhenClose = function () {this.activeWhenClose = false; };
-MagicModal.prototype.setUrl = function (url) {this.url = url; };
-MagicModal.prototype.unSetToConfirmClose = function () {this.confirmToClose = false; };
-
 MagicModal.prototype.execute = function () {
     loading(true);
-    self = this
+    self = this;
     self.sending = false;
-    let params = 'modal:true, modal_name:' + this.id;
 
     $.get(
         self.url,
-        toJSON( params )
+        self.params
     ).done(
         function( data, textStatus, jqXHR ) {
             loading(false);
             if (isJSON(data)) {
                 if(data.error){
-                    setTimeout( self.id + '.setInactiveWhenClose()', 0 );
-                    setTimeout( self.id + '.executeClose()', 0 );
+                    setTimeout(self.id + '.setInactiveWhenClose()', 0);
+                    setTimeout(self.id + '.executeClose()', 0);
                     new MagicMessage(
                         'error',
                         data.data.title,
@@ -106,14 +109,14 @@ MagicModal.prototype.execute = function () {
                 }else{
                     self.construct(data);
                 }
-            } else{
+            }else{
                 self.construct(data);
             }
         }
     ).fail(
-        function( jqXHR, textStatus, errorThrown ) { loading( false );
+        function( jqXHR, textStatus, errorThrown ) {
+            loading( false );
             setTimeout( self.id + '.executeClose()', 0 );
-            loading(false);
             if (jqXHR.status !== 302) {
                 new MagicMessage(
                     'error',
@@ -138,33 +141,9 @@ MagicModal.prototype.construct = function (data) {
     _modal.find('.modal-footer-buttons').html(_modal.find('.control_modal').html());
 
     if ( !this.getBeforeLoad() === false ) setTimeout( this.getBeforeLoad(), 0 );
+
     setTimeout( this.appendJS() );
     setTimeout( this.setFocus(), 100);
-};
-
-MagicModal.prototype.getForm = function(){
-    return  $( "div#" + this.id ).find('form');
-}
-
-MagicModal.prototype.setFocus = function(){
-    this.getForm().find('input, textarea, select')
-        .not('input[type=hidden],input[type=button],input[type=submit],input[type=reset],input[type=image],button')
-        .filter(':enabled:visible:first')
-        .focus();
-};
-
-MagicModal.prototype.disabledSubmit = function () {
-    this.sending = true;
-    $( "div#" + this.id ).find('#execute_form').addClass('disabled').prop('disabled', true);
-};
-
-MagicModal.prototype.enabledSubmit = function () {
-    this.sending = false;
-    $( "div#" + this.id ).find('#execute_form').removeClass('disabled').prop('disabled', false);
-};
-
-MagicModal.prototype.hasError = function () {
-    return $( "div#" + this.id ).find( 'form' ).find('.has-error').length;
 };
 
 MagicModal.prototype.appendJS = function () {
@@ -225,6 +204,27 @@ MagicModal.prototype.appendJS = function () {
             });\
         </script>"
     );
+};
+
+MagicModal.prototype.setFocus = function(){
+    $( "div#" + this.id ).find('form').find('input, textarea, select')
+        .not('input[type=hidden],input[type=button],input[type=submit],input[type=reset],input[type=image],button')
+        .filter(':enabled:visible:first')
+        .focus();
+};
+
+MagicModal.prototype.disabledSubmit = function () {
+    this.sending = true;
+    $( "div#" + this.id ).find('#execute_form').addClass('disabled').prop('disabled', true);
+};
+
+MagicModal.prototype.enabledSubmit = function () {
+    this.sending = false;
+    $( "div#" + this.id ).find('#execute_form').removeClass('disabled').prop('disabled', false);
+};
+
+MagicModal.prototype.hasError = function () {
+    return $( "div#" + this.id ).find( 'form' ).find('.has-error').length;
 };
 
 MagicModal.prototype.close = function () {
@@ -321,11 +321,6 @@ MagicModal.prototype.html = function(){
 };
 
 /**EXTRA FUNCTIONS AND OPTIONS**/
-function endSubmitForm(modal, afterExecute){
-    setTimeout( modal + '.executeClose()', 0 );
-    if(!afterExecute === false) setTimeout( afterExecute, 0 );
-}
-
 function endRequest(modal, data, afterExecute){
     if (checkJSON(data)) {
         if(data.error === true){
@@ -339,10 +334,11 @@ function endRequest(modal, data, afterExecute){
                 if(data.close_parent === false){
                     temporalModal = new MagicModal(data.url,'','','temporalModal');
                 }else{
-                    setTimeout( modal + '.setUrl(\"' + data.url + '\")', 0 );
-                    setTimeout( modal + '.unSetToConfirmClose()');
-                    setTimeout( modal + '.setActiveWhenClose()');
-                    setTimeout( modal + '.execute()', 0 );
+                    _modal = window[modal];
+                    setTimeout(_modal.setUrl(data.url), 0 );
+                    setTimeout(_modal.unSetToConfirmClose(), 0 );
+                    setTimeout(_modal.setActiveWhenClose(), 0 );
+                    setTimeout(_modal.execute(), 0 );
                 }
             }else{
                 if(typeof(attribute = $('#' + data.magic_select_attribute)) != "undefined"){
@@ -359,10 +355,9 @@ function endRequest(modal, data, afterExecute){
     }
 }
 
-function removeItemFromArr( arr, item ) {
-    return arr.filter( function( e ) {
-        return e !== item;
-    } );
+function endSubmitForm(_modal, afterExecute){
+    window[_modal].executeClose();
+    if(!window[_modal].afterExecute === false) setTimeout(window[_modal].afterExecute, 0 );
 }
 
 function LoadModal(modal) {
@@ -372,11 +367,12 @@ function LoadModal(modal) {
 LoadModal.prototype.load = function(){
     let content = $( 'div#' + this.modal);
 
-    let hasError =  content.find( 'form' ).find('.has-error').length;
-    lengthContent = content.find( 'form' ).length;
+    let hasError = content.find( 'form' ).find('.has-error').length;
+    let lengthContent = content.find( 'form' ).length;
+
     if(hasError || lengthContent == 0){
         loading(false);
-        setTimeout(this.modal + ".enabledSubmit()", 0);
+        window[this.modal].enabledSubmit();
         return false;
     }else{
         setTimeout(this.modal + '_load.load()', 0);
@@ -405,6 +401,6 @@ $(document).on('click', '#execute_form', function (evt) {
 
 $(document).on('click', '.close_no_question', function (e) {
     e.preventDefault();
-    setTimeout( $(this).attr('modal') + '.close()',0);
+    window[$(this).attr('form')].close();
 });
 /**EXTRA FUNCTIONS AND OPTIONS**/
