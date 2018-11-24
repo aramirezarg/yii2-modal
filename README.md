@@ -1,4 +1,4 @@
-Magic Modal
+Magic Modal {Beta}
 ============
 Magic Modal
 
@@ -43,9 +43,17 @@ You can use this modal by attributes:
     )
     //ajaxOptions and jsFunctions are optional.
 ?>
+```
+
+###Register assets
+In your main: register 
+```php
+<?php
+
+use magicsoft\modal\MagicModalAsset;
+
+MagicModalAsset::register($this);
+```
 
 Or you can use this modal by js:
 myModal = new MagicModal(url, ajaxOptions, jsFunctions, 'myModal')
-
-**Pending documentation**
-**Pending load other library**
