@@ -45,7 +45,7 @@ You can use this modal by attributes:
 ?>
 ```
 
-###Register assets
+##Register assets
 In your main: register 
 ```php
 <?php
