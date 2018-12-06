@@ -1,10 +1,11 @@
 let Modals = [];
 
 /**INIT FROM ATTRIBUTE**/
-$(document).on('click', '#magic-modal', function (e) {
+function MagicModalInit(e) {
+    e.stopPropagation();
     e.preventDefault();
-    $(this).blur();
 
+    $(this).blur();
     let name = (_name = $(this).attr('name')) === undefined || _name === '' ? createId() : _name;
     let url = (_url = $(this).attr('href')) === undefined ? $(this).attr('url') : _url;
     let ajaxOptions = $(this).attr('ajaxOptions');
@@ -12,7 +13,7 @@ $(document).on('click', '#magic-modal', function (e) {
     let params = $(this).attr('data-params');
 
     window[name] = new MagicModal(url, ajaxOptions, jsFunctions, name, params);
-});
+}
 /**INIT FROM ATTRIBUTE**/
 
 MagicModal = function (url, ajaxOptions, jsFunctions, name, params) {
@@ -57,6 +58,13 @@ MagicModal = function (url, ajaxOptions, jsFunctions, name, params) {
         self.generate();
     }
 };
+
+MagicModal.prototype.addListeners = function(){
+    var items = document.getElementsByClassName('magic-modal');
+    for (var i = 0; i < items.length; i++) {
+        items[i].addEventListener('click', MagicModalInit);
+    }
+}
 
 MagicModal.prototype.getSendForm = function () {
     let send = ((this.ajaxOptions.send === undefined || this.ajaxOptions.send === '') ? true : this.ajaxOptions.send);
@@ -129,10 +137,11 @@ MagicModal.prototype.execute = function () {
 };
 
 MagicModal.prototype.construct = function (data) {
-    let _modal = $('div#' + this.id);
+    let self = this;
+    let _modal = $('div#' + self.id);
     $('body').addClass('modal-open');
 
-    $('#' + this.id + '-modal-content').html(data);
+    $('#' + self.id + '-modal-content').html(data);
 
     _modal.find('.control_modal').find('#_execute_form').attr('form', this.id);
     _modal.find('.control_modal').find('#_execute_form').attr('id', 'execute_form');
@@ -140,10 +149,11 @@ MagicModal.prototype.construct = function (data) {
 
     _modal.find('.modal-footer-buttons').html(_modal.find('.control_modal').html());
 
-    if ( !this.getBeforeLoad() === false ) setTimeout( this.getBeforeLoad(), 0 );
+    if ( !self.getBeforeLoad() === false ) setTimeout( self.getBeforeLoad(), 0 );
 
-    setTimeout( this.appendJS() );
-    setTimeout( this.setFocus(), 100);
+    setTimeout( self.appendJS(),0 );
+    setTimeout( self.setFocus(),0 );
+    setTimeout( self.addListeners(),0 );
 };
 
 MagicModal.prototype.appendJS = function () {
@@ -365,12 +375,7 @@ function LoadModal(modal) {
 }
 
 LoadModal.prototype.load = function(){
-    let content = $( 'div#' + this.modal);
-
-    let hasError = content.find( 'form' ).find('.has-error').length;
-    let lengthContent = content.find( 'form' ).length;
-
-    if(hasError || lengthContent == 0){
+    if(window[this.modal].hasError() || $( 'div#' + this.modal).find( 'form' ).length == 0){
         loading(false);
         window[this.modal].enabledSubmit();
         return false;
@@ -403,4 +408,9 @@ $(document).on('click', '.close_no_question', function (e) {
     e.preventDefault();
     window[$(this).attr('form')].close();
 });
+
+var items = document.getElementsByClassName('magic-modal');
+for (var i = 0; i < items.length; i++) {
+    items[i].addEventListener('click', MagicModalInit);
+}
 /**EXTRA FUNCTIONS AND OPTIONS**/
