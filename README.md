@@ -34,9 +34,7 @@ You can use this modal by attributes:
         '<span class="glyphicon glyphicon-plus"></span> Create',
         ['country/create'],
         [
-            'id' => 'magic-modal',
-            'onClick' => 'return false;',
-            'class' => 'btn btn-success',
+            'class' => 'magic-modal btn btn-success',
             'ajaxOptions' => '{"confirmToLoad":true,"confirmToSend":true"confirmToClose":true}',
             'jsFunctions' => ''
         ]
