@@ -9,7 +9,7 @@ use yii\web\AssetBundle;
 
 class MagicModalAsset extends AssetBundle
 {
-    public $sourcePath = '@vendor/magicsoft/yii2-modal/src/assets/source';
+    public $sourcePath = '@vendor/magicsoft/yii2-modal/src/assets';
 
     public $js = [
 		'js/magic.modal.js',
