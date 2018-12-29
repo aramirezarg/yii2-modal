@@ -34,9 +34,9 @@ MagicModal = function (url, ajaxOptions, jsFunctions, name, params) {
     this.confirmToSend = objectIsSet(this.ajaxOptions.confirmToSend) ? this.ajaxOptions.confirmToSend : false;
     this.confirmToClose = objectIsSet(this.ajaxOptions.confirmToClose) ? this.ajaxOptions.confirmToClose : false;
 
-    this.confirmToLoadMessage = objectIsSet(this.ajaxOptions.confirmToLoadMessage) ? this.ajaxOptions.confirmToLoadMessage : 'Execute this action?';
-    this.confirmToSendMessage = objectIsSet(this.ajaxOptions.confirmToSendMessage) ? this.ajaxOptions.confirmToSendMessage : 'Send data to server?';
-    this.confirmToCloseMessage = objectIsSet(this.ajaxOptions.confirmToCloseMessage) ? this.ajaxOptions.confirmToCloseMessage : 'Close this window?';
+    this.confirmToLoadMessage = objectIsSet(this.ajaxOptions.confirmToLoadMessage) ? this.ajaxOptions.confirmToLoadMessage : magicModalMessages.confirmToLoad.message;
+    this.confirmToSendMessage = objectIsSet(this.ajaxOptions.confirmToSendMessage) ? this.ajaxOptions.confirmToSendMessage : magicModalMessages.confirmToSend.message;
+    this.confirmToCloseMessage = objectIsSet(this.ajaxOptions.confirmToCloseMessage) ? this.ajaxOptions.confirmToCloseMessage : magicModalMessages.confirmToClose.message;
 
     this.afterExecute = objectIsSet(this.jsFunctions.afterExecute) ? "'" + this.jsFunctions.afterExecute + "'" : false;
     this.beforeLoad = objectIsSet(this.jsFunctions.beforeLoad) ? this.jsFunctions.beforeLoad : false;
@@ -48,7 +48,7 @@ MagicModal = function (url, ajaxOptions, jsFunctions, name, params) {
     if(self.confirmToLoad) {
         new MagicMessage(
             'confirm',
-            'Confirmation to load',
+            magicModalMessages.confirmToLoad.title,
             self.confirmToLoadMessage,
             function () {
                 self.generate();
@@ -143,11 +143,8 @@ MagicModal.prototype.construct = function (data) {
 
     $('#' + self.id + '-modal-content').html(data);
 
-    _modal.find('.control_modal').find('#_execute_form').attr('form', this.id);
-    _modal.find('.control_modal').find('#_execute_form').attr('id', 'execute_form');
-    _modal.find('.control_modal').find('._close_no_question').attr('onclick', this.id + '.close(); return false;');
-
-    _modal.find('.modal-footer-buttons').html(_modal.find('.control_modal').html());
+    _modal.find('.magic-form-submit').attr('magic-modal-name', this.id).addClass('magic-modal-execute');
+    _modal.find('.magic-form-cancel').attr('magic-modal-name', this.id).addClass('magic-modal-close');
 
     if ( !self.getBeforeLoad() === false ) setTimeout( self.getBeforeLoad(), 0 );
 
@@ -170,16 +167,11 @@ MagicModal.prototype.appendJS = function () {
             );
         }, 0
     );
-
-    _modal.find( '.for-buttons-modal' ).append(self.htmlModalHeader());
-
-    _modal.find( '.footer-form' ).remove();
-
-    if(self.getSendForm()){
-        _modal.find( '.footer-form' ).remove();
+    
+    if(_modal.find('.for-buttons-modal').length > 0){
+        _modal.find('.for-buttons-modal').append(self.htmlModalButtons());
     }else{
-        _modal.find( '#execute_form' ).remove();
-        _modal.find( '#cancel_modal' ).html( 'Close ' );
+        _modal.find('.modal-content').prepend(self.htmlModalHeader());
     }
 
     _modal.find('form').append("\
@@ -243,8 +235,8 @@ MagicModal.prototype.close = function () {
     if(self.confirmToClose === true){
         new MagicMessage(
             'confirm',
-            'Closing confirmation',
-            'If you close the screen you may lose important information. <br> <br> <strong> Do you want to continue? </strong> ',
+            magicModalMessages.confirmToClose.title,
+            self.confirmToCloseMessage,
             function(){
                 self.executeClose();
             },
@@ -269,22 +261,12 @@ MagicModal.prototype.executeClose = function () {
         if(!this.getWhenClose() === false) setTimeout( this.getWhenClose() , 0 );
 };
 
-MagicModal.prototype.htmlModalHeader = function(){
-    return '\
-    <button onclick="' + this.id + '.refresh()" type="button" class="btn btn-box-tool bnt-refresh" data-toggle="button" aria-pressed="false">\
-        <i class="fa fa-refresh"></i>\
-    </button>\
-    <button onclick="' + this.id + '.close()" type="button" class= "btn btn-box-tool">\
-        <i class="glyphicon glyphicon-remove"></i>\
-    </button>'
-};
-
 MagicModal.prototype.refresh = function(){
     self = this;
     new MagicMessage(
         'confirm',
-        'Reload this window',
-        'This action will return your data to the latest update. <br> <br> <strong> Recent changes will be lost. </strong>',
+        magicModalMessages.confirmToReload.title,
+        magicModalMessages.confirmToReload.message,
         function(){self.execute();},
         ''
     )
@@ -297,20 +279,6 @@ MagicModal.prototype.sendForm = function(form){
     }
 };
 
-MagicModal.prototype.htmlModalFooter = function(){
-    return '\
-    <div class = "">\
-        <button type="button" id="execute_form" form = "' + this.id + '"  class = "btn btn-success"> \
-            <span class ="glyphicon glyphicon-ok" style="padding-right: 3px"/>\
-            Send\
-         </button>\
-        <button onclick="' + this.id + '.close()" type="button" class= "btn btn-warning" >\
-            <span class ="glyphicon glyphicon-ban-circle style="padding-right: 3px"/>\
-            <span id="cancel_modal">Close</span>\
-        </button>\
-    </div>';
-};
-
 MagicModal.prototype.html = function(){
     return '\
     <div id="' + this.id + '" class="modal fade in" role="dialog" tabindex = "-1" data-backdrop="static" style="display: block;">\
@@ -321,13 +289,47 @@ MagicModal.prototype.html = function(){
                         <h1 style = "font-size: 80px; text-align: center; color: #F5F5F5">loading...</h1>\
                     </div>\
                 </div>\
-                <div id="' + this.id + '-modal-footer" class="modal-footer" style = "background-color: whitesmoke; padding: 5px; border-bottom-left-radius: 4px; border-bottom-right-radius: 4px">\
-                    <div class = "modal-footer-buttons"></div>\
-                </div>\
             </div>\
         </div>\
     </div>\
     <div class = "modal-backdrop fade in" id = "' + this.id + '_modal-backdrop"/>';
+};
+
+MagicModal.prototype.htmlModalHeader = function(){
+    return '\
+    <div class="box-header header-form modal-header" style="background-color: whitesmoke">\
+        <h3 class="box-title">\
+            <i class="fa fa-list-ul" style="font-size: x-large; text-decoration: none; padding-right: 5px; color:orange;"></i>\
+            <strong style="font-size: x-large; text-decoration: none; color:black">Modal</strong>\
+            <i class="ion ion-ios-arrow-right" style="padding-right: 5px; padding-left: 5px;"></i>\
+            <small style="font-size: large; text-decoration:none;">DEFAULT VIEW</small>\
+        </h3>\
+        <div class="box-tools pull-right for-buttons-modal">' +
+            this.htmlModalButtons() + '\
+        </div>\
+    </div>';
+}
+
+MagicModal.prototype.htmlModalButtons = function(){
+    return '\
+    <button magic-modal-name="' + this.id + '" type="button" class="magic-modal-refresh btn btn-box-tool bnt-refresh" data-toggle="button" aria-pressed="false">\
+        <i class="fa fa-refresh"></i>\
+    </button>\
+    <button magic-modal-name="' + this.id + '" type="button" class= "magic-modal-close btn btn-box-tool">\
+        <i class="glyphicon glyphicon-remove"></i>\
+    </button>'
+};
+
+MagicModal.prototype.htmlModalFooter = function(){
+    return '\
+    <div>\
+        <button type="button" id="execute_form" form = "' + this.id + '"  class = "btn btn-success"> \
+            Send\
+         </button>\
+        <button magic-modal-name="' + this.id + '" type="button" class= "btn btn-warning" >\
+            <span id="cancel_modal">Close</span>\
+        </button>\
+    </div>';
 };
 
 /**EXTRA FUNCTIONS AND OPTIONS**/
@@ -367,7 +369,7 @@ function endRequest(modal, data, afterExecute){
 
 function endSubmitForm(_modal, afterExecute){
     window[_modal].executeClose();
-    if(!window[_modal].afterExecute === false) setTimeout(window[_modal].afterExecute, 0 );
+    if(!window[_modal].afterExecute === false) setTimeout(afterExecute, 0 );
 }
 
 function LoadModal(modal) {
@@ -384,17 +386,17 @@ LoadModal.prototype.load = function(){
     }
 };
 
-$(document).on('click', '#execute_form', function (evt) {
+$(document).on('click', '.magic-modal-execute', function (evt) {
     $(this).blur();
-    let modal = window[$(this).attr('form')];
-    let form = $( 'div#' + $(this).attr('form') ).find( 'form' );
+    let modal = window[$(this).attr('magic-modal-name')];
+    let form = $( 'div#' + $(this).attr('magic-modal-name') ).find( 'form' );
 
     evt.preventDefault();
 
     if(modal.confirmToSend === true){
         new MagicMessage(
             'confirm',
-            'Confirmation to send',
+            magicModalMessages.confirmToSend.title,
             modal.confirmToSendMessage,
             function(){modal.sendForm(form);},
             ''
@@ -404,9 +406,20 @@ $(document).on('click', '#execute_form', function (evt) {
     }
 });
 
-$(document).on('click', '.close_no_question', function (e) {
+$(document).on('click', '.magic-modal-refresh', function (e) {
     e.preventDefault();
-    window[$(this).attr('form')].close();
+    e.stopPropagation();
+    $(this).blur();
+
+    window[$(this).attr('magic-modal-name')].refresh();
+});
+
+$(document).on('click', '.magic-modal-close', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    $(this).blur();
+
+    window[$(this).attr('magic-modal-name')].close();
 });
 
 var items = document.getElementsByClassName('magic-modal');

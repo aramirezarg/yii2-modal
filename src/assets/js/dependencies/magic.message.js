@@ -1,1 +1,128 @@
-MagicMessage=function(e,t,a,o,i){Modals.push("");var s=_randText();window[s]=new _MagicMessage(s,e,t,a,o,i)},_MagicMessage=function(e,t,a,o,i,s){this.id=this.createId(),this.name=e,this.type=t,this.title=a,this.message=o,this.functionOk=i,this.functionCancel=s,this.generate()},_MagicMessage.prototype.executeFunctionOk=function(){setTimeout(this.functionOk,0)},_MagicMessage.prototype.executeFunctionCancel=function(){setTimeout(this.functionCancel,0)},_MagicMessage.prototype.generate=function(){var e="",t="",a="";"confirm"===this.type?(new Beep(22050).play(400,.1,[Beep.utils.amplify(1e3)]),e="warning",t="orange",a="ion-help-circled"):"alert"===this.type?(new Beep(22050).play(600,.1,[Beep.utils.amplify(1e3)]),e="info",t="#00CED1",a="ion-alert-circled"):"error"===this.type?(new Beep(22050).play(800,.1,[Beep.utils.amplify(1e3)]),e="warning",t="#ff4f3a",a="ion-android-alert"):(new Beep(22050).play(400,.1,[Beep.utils.amplify(1e3)]),e="default",t="#00CED1",a="ion-android-radio-button-off"),$("body").append("        <div id='"+this.id+"' class='modal bootstrap-dialog type-"+e+" fade size-normal in' role='dialog' tabindex data-backdrop='static' style='display: block;'>            <div class='modal-dialog' role='document'>                <div class='modal-content' style = 'border-radius: 4px'>                    <div class='box-header header-form modal-header' style='background-color:"+t+"'>                        <i class='ion "+a+"' style='font-size: 30px;'></i>                        <span style='font-size: 25px'> "+this.title+"</span>                    </div>                    <div class='modal-body'>                        <div id = 'modal_content' style='font-size: 16px'/>                    </div>                    <div class='modal-footer'  style = 'background-color: #b8c3ca; padding: 5px; border-bottom-left-radius: 4px; border-bottom-right-radius: 4px'>                        <div class = ''>                            <a name = '"+this.name+"' type='button' message = '"+this.id+"' id='execute_message' autofocus class = 'btn btn-success btn-social btn-flat'"+("confirm"!==this.type?' style = "display: none;"':"")+">                                <span class ='ion ion-android-checkmark-circle' style='padding-right: 3px'/>                                Aceptar                             </a>                            <a name = '"+this.name+"' message = '"+this.id+"' id = 'message_close_no_question' class='btn btn-warning btn-social btn-flat' >                                <span class ='ion ion-ios-close-outline' style='padding-right: 3px'/>                                <span id='cancel_modal'>"+("confirm"===this.type?" Cancelar":"Aceptar")+"</span>                            </a>                        </div>                    </div>                </div>\x3c!-- /.modal-content --\x3e            </div>\x3c!-- /.modal-dialog --\x3e        </div>\x3c!-- /.modal --\x3e        <div class = 'modal-backdrop fade in' id = '"+this.id+"_modal-backdrop'/>"),setTimeout(this.execute(),0)},_MagicMessage.prototype.execute=function(){var e=this.id;$("body").addClass("modal-open"),$("#"+e).modal("show").find("#modal_content").html(this.message),setTimeout(function(){$(document).find(".modal-backdrop").remove(),setTimeout(function(){$("#"+e+"_modal-backdrop").addClass("modal-backdrop fade in")},0)},0),setTimeout(function(){$("#"+e).find("#modal_content").focus()},0)},_MagicMessage.prototype.createId=function(){for(var e="",t="AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0123456789",a=0;a<20;a++)e+=t.charAt(Math.floor(Math.random()*t.length));return e},$(document).on("click","#execute_message",function(e){$(this).blur(),Modals.pop();var t=$(this).attr("message");0===Modals.length&&$("body").removeClass("modal-open").addClass(""),$(document).find("#"+t).modal("hide").remove(),$(document).find("#"+t+"_modal-backdrop").remove();var a=$(this).attr("name");setTimeout(a+".executeFunctionOk()",0)}),$(document).on("click","#message_close_no_question",function(e){var t=$(this).attr("message");e.preventDefault(),Modals.pop(),0===Modals.length&&$("body").removeClass("modal-open").addClass(""),$(document).find("#"+t).modal("hide").remove(),$(document).find("#"+t+"_modal-backdrop").remove();var a=$(this).attr("name");setTimeout(a+".executeFunctionCancel()",0)});
+class MagicMessage{
+    constructor(type, title, message, okFunction, cancelFunction, name){
+        this.class = '';
+        this.color = '';
+        this.icon = '';
+
+        this.type = type;
+        this.title = title;
+        this.message = message;
+        this.okFunction = okFunction;
+        this.cancelFunction = cancelFunction;
+        this.name = name;
+
+        if(objectIsSet(name)){
+            this.construct();
+        }else{
+            name = this.getName();
+            window[name] = new MagicMessage(type, title, message, okFunction, cancelFunction, name);
+        }
+    }
+
+    construct() {
+        Modals.push(this.name);
+
+        this.setConfig();
+
+        $( "body" ).append("\
+            <div class = 'modal bootstrap-dialog type-" + this.class + this.name + " size-normal' data-backdrop='static' style='display: none;'>\
+                <div class='modal-dialog'>\
+                    <div class='modal-content' style = 'border-radius: 4px'>" +
+                        this.htmlHead() +
+                        this.htmlBody() +
+                        this.htmlFooter() + "\
+                   </div>\
+                </div>\
+            </div>"
+        ).addClass('modal-open');
+        $('.' + this.name).fadeIn(200).find('.content-message').html(this.message);
+    }
+
+    setConfig() {
+        var config = {
+            confirm: {class: "warning ", color: "orange", icon: "glyphicon-question-sign"},
+            alert: {class: "info ", color: "#00CED1", icon: "glyphicon-info-sign"},
+            error: {class: "warning ", color: "#ff4f3a", icon: "glyphicon-warning-sign"},
+            default: {class: "default ", color: "#00CED1", icon: "glyphicon-comment"}
+        };
+
+        this.class = config[this.type]['class'];
+        this.color = config[this.type]['color'];
+        this.icon = config[this.type]['icon'];
+    }
+
+    htmlHead(){
+        return "\
+            <div class='box-header header-form modal-header' style='background-color:" + this.color + ";'>\
+                <i class='glyphicon " + this.icon + "' style='font-size: 30px;'></i>\
+                <span style='font-size: 25px;'> " + this.title + "</span>\
+            </div>\
+        ";
+    }
+
+    htmlBody(){
+        return "\
+            <div class='box-body'>\
+                <div class = 'content-message' style='font-size: 16px'/>\
+            </div>\
+        ";
+    }
+
+    htmlFooter(){
+        return "\
+            <div class='box-footer footer-form ' style = 'background-color: whitesmoke;'>\
+                <div magic-message = '" + this.name  + "' class='box-tools pull-right'>" +
+                    this.okButton() + this.cancelButton() + "\
+                </div>\
+            </div>\
+        ";
+    }
+
+    okButton(){
+        return "<div class='btn-group'><button class = 'magic-message-run btn btn-" + (this.type == 'confirm' ? 'success' : 'warning') + "'>" + magicModalMessages.confirmTexts.ok + "</button></div>";
+    }
+
+    cancelButton(){
+        return this.type == 'confirm' ? "<div class='btn-group'><a class='magic-message-close btn btn-warning' style='margin: 5px;'>" + magicModalMessages.confirmTexts.cancel + "</a></div>" : '';
+    }
+
+    runOkFunction() {
+        setTimeout(this.okFunction, 0);
+    }
+
+    runCancelFunction() {
+        setTimeout(this.cancelFunction, 0);
+    }
+
+    close() {
+        Modals.pop();
+
+        if(Modals.length === 0) $('body').removeClass('modal-open');
+
+        $(document).find('.' + this.name).fadeOut(200);
+    }
+
+    getName(){
+        var name = "", textBase = "abcdefghijklmnopqrstuvwxyz123456789";
+        for( var i=0; i < 20; i++ ) name += textBase.charAt(Math.floor(Math.random() * textBase.length));
+        return 'MSM_' + name;
+    }
+};
+
+$(document).on('click', '.magic-message-run', function (e) {
+    $(this).blur();
+    e.preventDefault();
+    magicMessage = $(this).parent().parent().attr('magic-message');
+
+    window[magicMessage].runOkFunction();
+    window[magicMessage].close();
+});
+
+$(document).on('click', '.magic-message-close', function (e) {
+    $(this).blur();
+    e.preventDefault();
+    magicMessage = $(this).parent().parent().attr('magic-message');
+
+    window[magicMessage].runCancelFunction();
+    window[magicMessage].close();
+});

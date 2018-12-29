@@ -1,4 +1,4 @@
-$(document).on('click', '.execute_delete', function (e) {
+$(document).on('click', '.magic-delete', function (e) {
     $(this).blur();
     e.preventDefault();
     var url = $(this).attr('href');
@@ -55,13 +55,13 @@ function openInNewTab(url){
     }
 }
 
-$(document).on('click', '.execute_action', function (e) {
+$(document).on('click', '.confirm-message', function (e) {
     $(this).blur();
     e.preventDefault();
-    var target      = $(this).attr('target');
-    var url         = $(this).attr('href') + ((target !== null && target !== undefined) ? '&target=' + target: '');
-    var title       = $(this).attr('_title');
-    var message     = $(this).attr('message');
+    var target = $(this).attr('target');
+    var url = $(this).attr('href') + ((target !== null && target !== undefined) ? '&target=' + target: '');
+    var title = $(this).attr('confirm-title');
+    var message = $(this).attr('confirm-text');
 
     new MagicMessage(
         'confirm',
@@ -82,7 +82,6 @@ $(document).on('click', '.execute_action', function (e) {
                                 data.data.data,
                                 '',
                                 function () {
-                                    //if(data.redirect) location.reload()
                                     loading(true);
                                     location.reload();
                                 }
@@ -108,12 +107,12 @@ $(document).on('click', '.execute_action', function (e) {
     );
 });
 
-$(document).on('click', '.execute_function', function (e) {
+$(document).on('click', '.magic-message', function (e) {
     $(this).blur();
     e.preventDefault();
-    var title       = $(this).attr('_title');
-    var message     = $(this).attr('message');
-    var okFunction     = $(this).attr('okFunction');
+    var title = $(this).attr('message-title');
+    var message = $(this).attr('message-text');
+    var okFunction = $(this).attr('okFunction');
 
     new MagicMessage(
         'confirm',
@@ -125,7 +124,7 @@ $(document).on('click', '.execute_function', function (e) {
     );
 });
 
-$(document).on('click', '#download-file', function (e) {
+$(document).on('click', '.download-file', function (e) {
     e.preventDefault();
     var url        = $(this).attr('href');
     new MagicMessage(
@@ -179,9 +178,9 @@ toJSON = function (ajax) {
     var pre = clear.split(',');
     var json = '';
     for (var i=0; i<pre.length; i++) {
-        var section         = pre[i].split(':');
-        var JSON_label      = $.trim(section[0]);
-        var JSON_property   = '';
+        var section = pre[i].split(':');
+        var JSON_label = $.trim(section[0]);
+        var JSON_property = '';
 
         for (var p=1; p<section.length; p++) {
             JSON_property += section[p] + ((p < (section.length - 1)) ? ':' : '');
