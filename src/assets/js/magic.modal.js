@@ -293,14 +293,14 @@ MagicModal.prototype.html = function(){
 
 MagicModal.prototype.htmlModalHeader = function(){
     return '\
-    <div class="msbox-header header-form modal-header" style="background-color: whitesmoke">\
-        <h3 class="msbox-title">\
+    <div class="box-header header-form modal-header" style="background-color: whitesmoke">\
+        <h3 class="box-title">\
             <i class="fa fa-list-ul" style="font-size: x-large; text-decoration: none; padding-right: 5px; color:orange;"></i>\
             <strong style="font-size: x-large; text-decoration: none; color:black">Modal</strong>\
             <i class="ion ion-ios-arrow-right" style="padding-right: 5px; padding-left: 5px;"></i>\
             <small style="font-size: large; text-decoration:none;">DEFAULT VIEW</small>\
         </h3>\
-        <div class="msbox-tools pull-right for-buttons-modal">' +
+        <div class="box-tools pull-right for-buttons-modal">' +
             this.htmlModalButtons() + '\
         </div>\
     </div>';

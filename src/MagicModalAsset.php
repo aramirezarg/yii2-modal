@@ -21,18 +21,9 @@ class MagicModalAsset extends AssetBundle
     public $sourcePath = '@vendor/magicsoft/yii2-modal/src/assets';
 
     public $js = [
-		'js/magic.modal.js',
-		'js/dependencies/magic.helper.js',
-		'js/dependencies/magic.message.js',
-		'js/dependencies/spin.js',
-		'js/dependencies/jquery.form.js',
-		'js/dependencies/beep.js'
+		'js/magic.modal.js'
     ];
-
-    public $css = [
-        'css/magicsoft.css',
-    ];
-
+    
     public $depends = [
         'yii\web\JqueryAsset',
         'magicsoft\base\MagicsoftAsset'
