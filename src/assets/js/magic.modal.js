@@ -6,7 +6,7 @@ function MagicModalInit(e) {
     e.preventDefault();
 
     $(this).blur();
-    let name = (_name = $(this).attr('name')) === undefined || _name === '' ? createId() : _name;
+    let name = (_name = $(this).attr('magic-modal-name')) === undefined || _name === '' ? createId() : _name;
     let url = (_url = $(this).attr('href')) === undefined ? $(this).attr('url') : _url;
     let ajaxOptions = $(this).attr('ajaxOptions');
     let jsFunctions = $(this).attr('jsFunctions');
@@ -16,318 +16,299 @@ function MagicModalInit(e) {
 }
 /**INIT FROM ATTRIBUTE**/
 
-MagicModal = function (url, ajaxOptions, jsFunctions, name, params) {
-    this.id = objectIsSet(name) ? name : createId();
-    this.sending = false;
-    this.url = url;
+class MagicModal{
+    constructor(url, ajaxOptions, jsFunctions, name, params) {
+        this.id = objectIsSet(name) ? name : createId();
+        this.sending = false;
+        this.url = url;
 
-    this.ajaxOptions = objectIsSet(ajaxOptions) ? ajaxOptions : 'send:true,response:true,confirmToLoad:false,confirmToSend:false,confirmToClose:false';
-    this.ajaxOptions = jQuery.parseJSON(checkJSON(this.ajaxOptions) ? this.ajaxOptions : toJSON(this.ajaxOptions));
+        this.ajaxOptions = objectIsSet(ajaxOptions) ? ajaxOptions : 'send:true,response:true,confirmToLoad:false,confirmToSend:false,confirmToClose:false';
+        this.ajaxOptions = jQuery.parseJSON(checkJSON(this.ajaxOptions) ? this.ajaxOptions : toJSON(this.ajaxOptions));
 
-    this.jsFunctions = objectIsSet(jsFunctions) ? jsFunctions : 'afterExecute:false,beforeLoad:false,whenClose:false,activeWhenClose:false';
-    this.jsFunctions = jQuery.parseJSON(checkJSON(this.jsFunctions) ? this.jsFunctions : toJSON(this.jsFunctions));
+        this.jsFunctions = objectIsSet(jsFunctions) ? jsFunctions : 'afterExecute:false,beforeLoad:false,whenClose:false,activeWhenClose:false';
+        this.jsFunctions = jQuery.parseJSON(checkJSON(this.jsFunctions) ? this.jsFunctions : toJSON(this.jsFunctions));
 
-    params = objectIsSet(params) ? params : '{}';
-    this.params = $.extend(true, jQuery.parseJSON(checkJSON(params) ? params : toJSON(params)), {magic_modal_name: this.id});
+        params = objectIsSet(params) ? params : '{}';
+        this.params = $.extend(true, jQuery.parseJSON(checkJSON(params) ? params : toJSON(params)), {magic_modal_name: this.id});
 
-    this.confirmToLoad = objectIsSet(this.ajaxOptions.confirmToLoad) ? this.ajaxOptions.confirmToLoad : false;
-    this.confirmToSend = objectIsSet(this.ajaxOptions.confirmToSend) ? this.ajaxOptions.confirmToSend : false;
-    this.confirmToClose = objectIsSet(this.ajaxOptions.confirmToClose) ? this.ajaxOptions.confirmToClose : false;
+        this.confirmToLoad = objectIsSet(this.ajaxOptions.confirmToLoad) ? this.ajaxOptions.confirmToLoad : false;
+        this.confirmToSend = objectIsSet(this.ajaxOptions.confirmToSend) ? this.ajaxOptions.confirmToSend : false;
+        this.confirmToClose = objectIsSet(this.ajaxOptions.confirmToClose) ? this.ajaxOptions.confirmToClose : false;
 
-    this.confirmToLoadMessage = objectIsSet(this.ajaxOptions.confirmToLoadMessage) ? this.ajaxOptions.confirmToLoadMessage : MagicsoftLanguage('Execute this action?');
-    this.confirmToSendMessage = objectIsSet(this.ajaxOptions.confirmToSendMessage) ? this.ajaxOptions.confirmToSendMessage : MagicsoftLanguage('Send data to server?');
-    this.confirmToCloseMessage = objectIsSet(this.ajaxOptions.confirmToCloseMessage) ? this.ajaxOptions.confirmToCloseMessage : MagicsoftLanguage('If you close the screen you may lose important information. <br> <br> <strong> Do you want to continue?</strong>');
+        this.afterExecute = objectIsSet(this.jsFunctions.afterExecute) ? "'" + this.jsFunctions.afterExecute + "'" : false;
+        this.beforeLoad = objectIsSet(this.jsFunctions.beforeLoad) ? this.jsFunctions.beforeLoad : false;
+        this.whenClose = objectIsSet(this.jsFunctions.whenClose) ? this.jsFunctions.whenClose : false;
+        this.activeWhenClose = objectIsSet(this.jsFunctions.activeWhenClose) ? this.jsFunctions.activeWhenClose : false;
 
-    this.afterExecute = objectIsSet(this.jsFunctions.afterExecute) ? "'" + this.jsFunctions.afterExecute + "'" : false;
-    this.beforeLoad = objectIsSet(this.jsFunctions.beforeLoad) ? this.jsFunctions.beforeLoad : false;
-    this.whenClose = objectIsSet(this.jsFunctions.whenClose) ? this.jsFunctions.whenClose : false;
-    this.activeWhenClose = objectIsSet(this.jsFunctions.activeWhenClose) ? this.jsFunctions.activeWhenClose : false;
+        self = this;
 
-    self = this;
-
-    if(self.confirmToLoad) {
-        new MagicMessage(
-            'confirm',
-            MagicsoftLanguage('Confirmation to load'),
-            self.confirmToLoadMessage,
-            function () {
-                self.generate();
-            }
-        );
-    }else{
-        self.generate();
+        if(self.confirmToLoad) {
+            new MagicMessage(
+                'confirm',
+                MagicsoftLanguage('Confirmation to load'),
+                MagicsoftLanguage('Execute this action?'),
+                function () {self.generate()}
+            );
+        }else{
+            self.generate();
+        }
     }
-};
 
-MagicModal.prototype.addListeners = function(){
-    var items = document.getElementsByClassName('magic-modal');
-    for (var i = 0; i < items.length; i++) {
-        items[i].addEventListener('click', MagicModalInit);
+    addListeners(){
+        var items = document.getElementsByClassName('magic-modal');
+        for (var i = 0; i < items.length; i++) {
+            items[i].addEventListener('click', MagicModalInit);
+        }
     }
-}
 
-MagicModal.prototype.getSendForm = function () {
-    let send = ((this.ajaxOptions.send === undefined || this.ajaxOptions.send === '') ? true : this.ajaxOptions.send);
-    return ( send ? ( ($('#' + this.id).find('form').attr('id') !== undefined)) : send );
-};
-MagicModal.prototype.getAfterExecute = function () {return this.afterExecute;};
-MagicModal.prototype.getBeforeLoad = function () {return this.beforeLoad;};
-MagicModal.prototype.getWhenClose = function () {return this.whenClose;};
-MagicModal.prototype.getUrl = function () {return this.url;};
+    hasForm(){
+        let send = ((this.ajaxOptions.send === undefined || this.ajaxOptions.send === '') ? true : this.ajaxOptions.send);
+        return ( send ? ( ($('#' + this.id).find('form').attr('id') !== undefined)) : send );
+    }
 
-MagicModal.prototype.setWhenClose = function (value) {this.whenClose = value;};
-MagicModal.prototype.setAfterExecute = function (value) {this.afterExecute = value;};
-MagicModal.prototype.setBeforeLoad = function (value) {this.beforeLoad = value;};
-MagicModal.prototype.setActiveWhenClose = function () {this.activeWhenClose = true;};
-MagicModal.prototype.setInactiveWhenClose = function () {this.activeWhenClose = false;};
-MagicModal.prototype.setUrl = function (url) {this.url = url;};
+    generate(){
+        Modals.push(this.id);
 
-MagicModal.prototype.unSetToConfirmClose = function () {this.confirmToClose = false;};
+        $("body").append(this.html()).addClass('modal-open');
+        $('div#' + this.id).fadeIn(200);
+        this.execute();
+    }
 
-MagicModal.prototype.generate = function () {
-    Modals.push(this.id);
-    $( "body" ).append(this.html());
-    setTimeout( this.execute(), 0);
-};
+    execute() {
+        loading(true);
+        self = this;
+        self.sending = false;
 
-MagicModal.prototype.execute = function () {
-    loading(true);
-    self = this;
-    self.sending = false;
-
-    $.get(
-        self.url,
-        self.params
-    ).done(
-        function( data, textStatus, jqXHR ) {
-            loading(false);
-            if (isJSON(data)) {
-                if(data.error){
-                    setTimeout(self.id + '.setInactiveWhenClose()', 0);
-                    setTimeout(self.id + '.executeClose()', 0);
-                    new MagicMessage(
-                        'error',
-                        data.data.title,
-                        data.data.data,
-                        '',
-                        function() {
-                            if(data.redirect) location.reload();
-                        }
-                    )
+        $.get(
+            self.url,
+            self.params
+        ).done(
+            function( data, textStatus, jqXHR ) {
+                loading(false);
+                if (isJSON(data)) {
+                    if(data.error){
+                        setTimeout(self.id + '.activeWhenClose = false', 0);
+                        setTimeout(self.id + '.executeClose()', 0);
+                        new MagicMessage(
+                            'error',
+                            data.data.title,
+                            data.data.data,
+                            '',
+                            function() {if(data.redirect) location.reload();}
+                        )
+                    }else{
+                        self.construct(data);
+                    }
                 }else{
                     self.construct(data);
                 }
-            }else{
-                self.construct(data);
             }
-        }
-    ).fail(
-        function( jqXHR, textStatus, errorThrown ) {
-            loading( false );
-            setTimeout( self.id + '.executeClose()', 0 );
-            if (jqXHR.status !== 302) {
-                new MagicMessage(
-                    'error',
-                    'Application does not complete',
-                    "<strong>Error " + jqXHR.status + "</strong>: " + jqXHR.responseText
-                );
+        ).fail(
+            function( jqXHR, textStatus, errorThrown ) {
+                loading( false );
+                setTimeout( self.id + '.executeClose()', 0 );
+                if (jqXHR.status !== 302) {
+                    new MagicMessage(
+                        'error',
+                        'Application does not complete',
+                        "<strong>Error " + jqXHR.status + "</strong>: " + jqXHR.responseText
+                    );
+                }
             }
-        }
-    );
-};
-
-MagicModal.prototype.construct = function (data) {
-    let self = this;
-    let _modal = $('div#' + self.id);
-    $('body').addClass('modal-open');
-
-    $('.' + self.id + '-modal-content').html(data);
-
-    _modal.find('.magic-form-submit').attr('magic-modal-name', this.id).addClass('magic-modal-execute');
-    _modal.find('.magic-form-cancel').attr('magic-modal-name', this.id).addClass('magic-modal-close');
-
-    if ( !self.getBeforeLoad() === false ) setTimeout( self.getBeforeLoad(), 0 );
-
-    setTimeout( self.appendJS(),0 );
-    setTimeout( self.setFocus(),0 );
-    setTimeout( self.addListeners(),0 );
-};
-
-MagicModal.prototype.appendJS = function () {
-    self = this;
-    let _modal = $('div#' + self.id );
-
-    setTimeout(
-        function(){
-            $(document).find( '.modal-backdrop' ).remove();
-            setTimeout(
-                function(){
-                    $("#" + self.id + "_modal-backdrop").addClass("modal-backdrop fade in");
-                }, 0
-            );
-        }, 0
-    );
-    
-    if(_modal.find('.for-buttons-modal').length > 0){
-        _modal.find('.for-buttons-modal').append(self.htmlModalButtons());
-    }else{
-        _modal.find('.modal-content').prepend(self.htmlModalHeader());
+        );
     }
 
-    _modal.find('form').append("\
-         <script> \
-            " + self.id + "_load = new LoadModal('" + self.id + "');\
-            $(function() {\
-				let div = $( 'div#" + self.id + "' );\
-                div.find( 'form' ).attr('onSubmit','setTimeout(' + self.id + '.disabledSubmit(), 0);setTimeout(" + self.id + "_load.load());');\
-                let form = div.find( 'form' );\
-                let afterExecute = " + self.getAfterExecute() + ";\
-                let modal = '" + self.id + "';\
-                let options = { \
-                    url: form.attr( 'action' ), \
-                    success: function(data, textStatus, jqXHR) {\
-						loading(false);\
-						setTimeout(modal + '.enabledSubmit()', 0 );\
-						endRequest(modal, data, afterExecute);\
-                    },\
-                    error: function(jqXHR, textStatus, errorThrown){\
-                        loading(false);\
-                        setTimeout( modal + '.enabledSubmit()', 0 );\
-                        if( jqXHR.status !== 302 ){\
-							new MagicMessage(\
-                                'error',\
-                                 errorjqXHR(jqXHR.status ,  jqXHR.responseText),\
-                                 jqXHR.responseText\
-                            )\
+    construct(data){
+        self = this;
+        var contentDiv = $("div#" + self.id);
+
+        contentDiv.find('.modal-dialog').html(data);
+        contentDiv.find('.magic-modal-content').addClass('modal-content');
+
+        contentDiv.find('.magic-modal-buttons').append(self.htmlModalButtons());
+        contentDiv.find('.magic-form-submit').attr('magic-modal-name', self.id).addClass('magic-modal-execute');
+        contentDiv.find('.magic-form-cancel').attr('magic-modal-name', self.id).addClass('magic-modal-close');
+
+        self.beforeLoadExecute();
+        self.appendJS();
+        self.setFocus();
+        self.addListeners();
+    }
+
+    appendJS(){
+        self = this;
+        let _modal = $('div#' + self.id);
+
+        $(document).find( '.modal-backdrop' ).remove();
+
+        /*if(_modal.find('.for-buttons-modal').length > 0){
+            _modal.find('.for-buttons-modal').append(self.htmlModalButtons());
+        }else{
+            _modal.find('.data-modal').prepend(self.htmlModalHeader());
+        }*/
+
+        _modal.find('form').append("\
+             <script> \
+                " + self.id + "_load = new LoadModal('" + self.id + "');\
+                $(function() {\
+                    let div = $( 'div#" + self.id + "' );\
+                    div.find( 'form' ).attr('onSubmit','setTimeout(' + self.id + '.disabledSubmit(), 0);setTimeout(" + self.id + "_load.load());');\
+                    let form = div.find( 'form' );\
+                    let afterExecute = " + self.afterExecute + ";\
+                    let modal = '" + self.id + "';\
+                    let options = { \
+                        url: form.attr( 'action' ), \
+                        success: function(data, textStatus, jqXHR) {\
+                            loading(false);\
+                            setTimeout(modal + '.enabledSubmit()', 0 );\
+                            endRequest(modal, data, afterExecute);\
+                        },\
+                        error: function(jqXHR, textStatus, errorThrown){\
+                            loading(false);\
+                            setTimeout( modal + '.enabledSubmit()', 0 );\
+                            if( jqXHR.status !== 302 ){\
+                                new MagicMessage(\
+                                    'error',\
+                                     errorjqXHR(jqXHR.status ,  jqXHR.responseText),\
+                                     jqXHR.responseText\
+                                )\
+                            }\
                         }\
-                    }\
-                }; \
-                div.find( 'form' ).ajaxForm(options);\
-            });\
-        </script>"
-    );
-};
+                    }; \
+                    div.find( 'form' ).ajaxForm(options);\
+                });\
+            </script>"
+        );
+    }
 
-MagicModal.prototype.setFocus = function(){
-    $( "div#" + this.id ).find('form').find('input, textarea, select')
-        .not('input[type=hidden],input[type=button],input[type=submit],input[type=reset],input[type=image],button')
-        .filter(':enabled:visible:first')
-        .focus();
-};
+    setFocus(){
+        $( "div#" + this.id ).find('form').find('input, textarea, select')
+            .not('input[type=hidden],input[type=button],input[type=submit],input[type=reset],input[type=image],button')
+            .filter(':enabled:visible:first')
+            .focus();
+    }
 
-MagicModal.prototype.disabledSubmit = function () {
-    this.sending = true;
-    $( "div#" + this.id ).find('#execute_form').addClass('disabled').prop('disabled', true);
-};
+    disabledSubmit(){
+        this.sending = true;
+        $( "div#" + this.id ).find('.magic-form-submit').addClass('disabled').prop('disabled', true);
+    }
 
-MagicModal.prototype.enabledSubmit = function () {
-    this.sending = false;
-    $( "div#" + this.id ).find('#execute_form').removeClass('disabled').prop('disabled', false);
-};
+    enabledSubmit(){
+        this.sending = false;
+        $( "div#" + this.id ).find('.magic-form-submit').removeClass('disabled').prop('disabled', false);
+    }
 
-MagicModal.prototype.hasError = function () {
-    return $( "div#" + this.id ).find( 'form' ).find('.has-error').length;
-};
+    hasError(){
+        return $( "div#" + this.id ).find( 'form' ).find('.has-error').length;
+    }
 
-MagicModal.prototype.close = function () {
-    if(this.sending) return false;
-    self = this;
-    if(self.confirmToClose === true){
+    close(){
+        if(this.sending) return false;
+        self = this;
+        if(self.confirmToClose === true){
+            new MagicMessage(
+                'confirm',
+                MagicsoftLanguage('Confirmation to close'),
+                MagicsoftLanguage('If you close the screen you may lose important information. <br> <br> <strong> Do you want to continue?</strong>'),
+                function(){
+                    self.executeClose();
+                },
+                ''
+            )
+        }else{
+            self.executeClose();
+        }
+    }
+
+    executeClose() {
+        loading(false);
+        Modals.pop();
+        if(Modals.length === 0) $( 'body' ).removeClass('modal-open');
+
+        $(document).find('div#' + this.id).fadeOut(200).remove();
+
+        this.whenCloseExecute();
+    }
+
+    refresh(){
+        self = this;
         new MagicMessage(
             'confirm',
-            MagicsoftLanguage('Confirmation to close'),
-            self.confirmToCloseMessage,
-            function(){
-                self.executeClose();
-            },
+            MagicsoftLanguage('Reload this window'),
+            MagicsoftLanguage('This action will return your data to the latest update. <br> <br> <strong> Recent changes will be lost.</strong>'),
+            function(){self.execute()},
             ''
         )
-    }else{
-        self.executeClose();
     }
-};
 
-MagicModal.prototype.executeClose = function () {
-    loading(false);
-
-    Modals.pop();
-
-    if(Modals.length === 0) $( 'body' ).removeClass( 'modal-open' ).addClass( '' );
-
-    $('#' + this.id ).modal( 'hide' ).remove();
-    $('#' + this.id + '_modal-backdrop' ).remove();
-
-    if(this.activeWhenClose)
-        if(!this.getWhenClose() === false) setTimeout( this.getWhenClose() , 0 );
-};
-
-MagicModal.prototype.refresh = function(){
-    self = this;
-    new MagicMessage(
-        'confirm',
-        MagicsoftLanguage('Reload this window'),
-        MagicsoftLanguage('This action will return your data to the latest update. <br> <br> <strong> Recent changes will be lost.</strong>'),
-        function(){self.execute();},
-        ''
-    )
-};
-
-MagicModal.prototype.sendForm = function(form){
-    if(this.sending === false){
-        loading(true);
-        $(form).submit();
+    sendForm(form){
+        if(this.sending === false){
+            loading(true);
+            $(form).submit();
+        }
     }
-};
 
-MagicModal.prototype.html = function(){
-    return '\
-    <div id="' + this.id + '" class="modal ms-modal fade in" style="display: block;">\
-        <div class="modal-dialog modal-lg">\
-            <div class="modal-content ' + this.id + '-modal-content" style = "border-radius: 4px">\
-                <h1 style = "font-size: 80px; text-align: center; color: #F5F5F5">loading...</h1>\
+    beforeLoadExecute(){
+        if(!self.beforeLoad === false) setTimeout( self.beforeLoad, 0 );
+    }
+
+    whenCloseExecute(){
+        if(this.activeWhenClose) if(!this.whenClose === false) setTimeout( this.whenClose , 0 );
+    }
+
+    html(){
+        return '\
+        <div id = "' + this.id + '" class="modal" data-backdrop="static" style="display: none;">\
+            <div class="modal-dialog modal-lg">\
+                <div class="magic-modal-content">\
+                    <h1 style = "font-size: 80px; text-align: center; color: #ced1d2 !important;">loading...</h1>\
+                </div>\
             </div>\
-        </div>\
-    </div>\
-    <div class = "modal-backdrop fade in" id = "' + this.id + '_modal-backdrop"/>';
-};
+        </div>';
+    }
 
-MagicModal.prototype.htmlModalHeader = function(){
-    return '\
-    <div class="box-header header-form modal-header" style="background-color: whitesmoke">\
-        <h3 class="box-title">\
-            <i class="fa fa-list-ul" style="font-size: x-large; text-decoration: none; padding-right: 5px; color:orange;"></i>\
-            <strong style="font-size: x-large; text-decoration: none; color:black">Modal</strong>\
-            <i class="ion ion-ios-arrow-right" style="padding-right: 5px; padding-left: 5px;"></i>\
-            <small style="font-size: large; text-decoration:none;">DEFAULT VIEW</small>\
-        </h3>\
-        <div class="box-tools pull-right for-buttons-modal">' +
+    htmlModalHeader(){
+        return '\
+        <div class="modal-header">\
+            <h3 class="modal-title">\
+                <i class="fa fa-list-ul" style="font-size: x-large; text-decoration: none; padding-right: 5px; color:orange;"></i>\
+                <strong style="font-size: x-large; text-decoration: none; color:black">Modal</strong>\
+                <i class="ion ion-ios-arrow-right" style="padding-right: 5px; padding-left: 5px;"></i>\
+                <small style="font-size: large; text-decoration:none;">DEFAULT VIEW</small>\
+            </h3>' +
             this.htmlModalButtons() + '\
-        </div>\
-    </div>';
-}
+        </div>';
+    }
 
-MagicModal.prototype.htmlModalButtons = function(){
-    return '\
-    <button magic-modal-name="' + this.id + '" type="button" class="magic-modal-refresh btn btn-box-tool bnt-refresh" data-toggle="button" aria-pressed="false">\
-        <i class="fa fa-refresh"></i>\
-    </button>\
-    <button magic-modal-name="' + this.id + '" type="button" class= "magic-modal-close btn btn-box-tool">\
-        <i class="glyphicon glyphicon-remove"></i>\
-    </button>'
-};
-
-MagicModal.prototype.htmlModalFooter = function(){
-    return '\
-    <div>\
-        <button type="button" id="execute_form" form = "' + this.id + '"  class = "btn btn-success"> \
-            Send\
-         </button>\
-        <button magic-modal-name="' + this.id + '" type="button" class= "btn btn-warning" >\
-            <span id="cancel_modal">Close</span>\
+    htmlModalButtons(){
+        return '\
+        <button magic-modal-name="' + this.id + '" type="button" class="magic-modal-refresh btn-default btn btn-outline-secondary btn-rounded" data-toggle="button" aria-pressed="false">\
+            <i class="fa fa-refresh ti-reload"></i>\
         </button>\
-    </div>';
-};
+        <button magic-modal-name="' + this.id + '" type="button" class= "magic-modal-close btn-default btn btn-outline-secondary btn-rounded">\
+            <i class="fa fa-close ti-close"></i>\
+        </button>'
+    }
 
+    htmlModalFooter(){
+        return '\
+        <div>\
+            <button type="button" magic-modal-name="' + this.id + '"  class = "btn btn-success magic-form-submit"> \
+                Send\
+             </button>\
+            <button magic-modal-name="' + this.id + '" type="button" class= "btn btn-warning magic-form-cancel">\
+                <span id="cancel_modal">Close</span>\
+            </button>\
+        </div>';
+    }
+
+    setWhenClose(value){this.whenClose = value}
+    setAfterExecute(value){this.afterExecute = value}
+    setBeforeLoad(value){this.beforeLoad = value}
+    setActiveWhenClose(){this.activeWhenClose = true}
+    setInactiveWhenClose(){this.activeWhenClose = false;}
+    setUrl(url){this.url = url}
+}
 /**EXTRA FUNCTIONS AND OPTIONS**/
 function endRequest(modal, data, afterExecute){
     if (checkJSON(data)) {
@@ -343,9 +324,9 @@ function endRequest(modal, data, afterExecute){
                     temporalModal = new MagicModal(data.url,'','','temporalModal');
                 }else{
                     _modal = window[modal];
-                    setTimeout(_modal.setUrl(data.url), 0 );
-                    setTimeout(_modal.unSetToConfirmClose(), 0 );
-                    setTimeout(_modal.setActiveWhenClose(), 0 );
+                    setTimeout(_modal.url = data.url, 0 );
+                    setTimeout(_modal.this.confirmToClose = false, 0 );
+                    setTimeout(_modal.this.activeWhenClose = true, 0 );
                     setTimeout(_modal.execute(), 0 );
                 }
             }else{
@@ -393,7 +374,7 @@ $(document).on('click', '.magic-modal-execute', function (evt) {
         new MagicMessage(
             'confirm',
             MagicsoftLanguage('Confirmation to send'),
-            modal.confirmToSendMessage,
+            MagicsoftLanguage('Send data to server?'),
             function(){modal.sendForm(form);},
             ''
         )

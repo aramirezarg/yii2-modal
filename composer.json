@@ -12,8 +12,7 @@
         }
     ],
     "require": {
-        "magicsoft/yii2-magicsoft-base": "*",
-        "magicsoft/yii2-form": "*",
+        "magicsoft/yii2-form": "*"
     },
     "autoload": {
         "psr-4": {

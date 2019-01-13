@@ -21,17 +21,16 @@ class MagicModalAsset extends AssetBundle
     public $sourcePath = '@vendor/magicsoft/yii2-modal/src/assets';
 
     public $js = [
-		'js/magic.modal.js'
+        'js/magic.modal.js'
     ];
-    
+
     public $depends = [
-        'yii\web\JqueryAsset',
         'magicsoft\base\MagicsoftAsset'
     ];
 
     public function init()
     {
-        $this->initI18N(MagicSoftModule::getSorceLangage(), 'magicmodal');
+        $this->initI18N(MagicsoftModule::getSorceLangage(), 'magicmodal');
         $this->initJsLanguage();
         parent::init();
     }
