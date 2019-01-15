@@ -70,7 +70,6 @@ class MagicModal{
         Modals.push(this.id);
 
         $("body").append(this.html()).addClass('modal-open');
-        $('div#' + this.id).fadeIn(200);
         this.execute();
     }
 
@@ -124,6 +123,7 @@ class MagicModal{
 
         contentDiv.find('.modal-dialog').html(data);
         contentDiv.find('.magic-modal-content').addClass('modal-content');
+        contentDiv.fadeIn(300);
 
         contentDiv.find('.magic-modal-buttons').append(self.htmlModalButtons());
         contentDiv.find('.magic-form-submit').attr('magic-modal-name', self.id).addClass('magic-modal-execute');
@@ -138,8 +138,6 @@ class MagicModal{
     appendJS(){
         self = this;
         let _modal = $('div#' + self.id);
-
-        $(document).find( '.modal-backdrop' ).remove();
 
         /*if(_modal.find('.for-buttons-modal').length > 0){
             _modal.find('.for-buttons-modal').append(self.htmlModalButtons());
@@ -223,11 +221,19 @@ class MagicModal{
     executeClose() {
         loading(false);
         Modals.pop();
-        if(Modals.length === 0) $( 'body' ).removeClass('modal-open');
-
-        $(document).find('div#' + this.id).fadeOut(200).remove();
-
+        
+        var divModal = $(document).find('div#' + this.id);
+        
         this.whenCloseExecute();
+        
+        setTimeout(function(){
+    		divModal.fadeOut(200);
+    		setTimeout(function(){
+    			divModal.remove();
+    			$('div#' + self.id + '-backdrop').remove();
+    			if(Modals.length === 0) $( 'body' ).removeClass('modal-open');
+    		}, 0)
+    	}, 200);
     }
 
     refresh(){
@@ -264,7 +270,8 @@ class MagicModal{
                     <h1 style = "font-size: 80px; text-align: center; color: #ced1d2 !important;">loading...</h1>\
                 </div>\
             </div>\
-        </div>';
+        </div>\
+        <div id = "' + this.id + '-backdrop" class = "modal-backdrop show"></div>';
     }
 
     htmlModalHeader(){
