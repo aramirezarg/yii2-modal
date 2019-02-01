@@ -45,9 +45,9 @@ class MagicModalAsset extends AssetBundle
         $_messages = substr($_messages, 0,strlen($_messages) - 1) . '}';
 
         $js = "
-        var ClientMagicsoftMessases = JSON.parse('$_messages');
+        var ClientMagicsoftMessages = JSON.parse('$_messages');
         function MagicsoftLanguage(t) {
-            return ClientMagicsoftMessases[t];
+            return ClientMagicsoftMessages[t];
         }";
 
         \Yii::$app->getView()->registerJs($js, View::POS_BEGIN);
