@@ -103,8 +103,9 @@ class MagicModal{
         contentDiv.fadeIn(300);
 
         contentDiv.find('.magic-modal-buttons').append(self.htmlModalButtons());
-        contentDiv.find('.magic-form-submit').attr('this-magic-modal-name', self.id).addClass('magic-modal-execute');
-        contentDiv.find('.magic-form-cancel').attr('this-magic-modal-name', self.id).addClass('magic-modal-close');
+        contentDiv.find('.magic-form-submit').attr('this-magic-modal-name', self.id).addClass(self.id + '-execute');
+        contentDiv.find('.magic-form-cancel').attr('this-magic-modal-name', self.id).addClass(self.id + '-back');
+        contentDiv.find('.magic-form-cancel').attr('href', '');
 
         self.beforeLoadExecute();
         self.appendJS();
@@ -240,29 +241,24 @@ class MagicModal{
             buttonModal[i].addEventListener('click', MagicModalInit);
         }
 
-        document.querySelector('.magic-modal-refresh').addEventListener('click', function(e){
-            e.stopPropagation();
-            e.preventDefault();
-            this.blur();
-
+        document.querySelector('.' + self.id + '-refresh').addEventListener('click', function(e){
+            self.stopPropagation(e, this);
             self.refresh();
         })
 
-        let buttonClose = document.querySelectorAll('.magic-modal-close');
-        for (var i = 0; i < buttonClose.length; i++) {
-            buttonClose[i].addEventListener('click', function (e) {
-                e.stopPropagation();
-                e.preventDefault();
-                this.blur();
+        document.querySelector('.' + self.id + '-close').addEventListener('click', function(e){
+            self.stopPropagation(e, this);
+            self.close();
+        })
 
-                self.close();
-            });
-        }
+        document.querySelector('.' + self.id + '-back').addEventListener('click', function(e){
+            self.stopPropagation(e, this);
+            self.close();
+        })
 
-        document.querySelector('.magic-modal-execute').addEventListener('click', function(e){
-            e.stopPropagation();
-            e.preventDefault();
-            this.blur();
+
+        document.querySelector('.' + self.id + '-execute').addEventListener('click', function(e){
+            self.stopPropagation(e, this);
 
             if(self.confirmToSend === true){
                 new MagicMessage(
@@ -276,6 +272,12 @@ class MagicModal{
                 self.sendForm();
             }
         })
+    }
+
+    stopPropagation(e, obj){
+        e.stopPropagation();
+        e.preventDefault();
+        obj.blur();
     }
 
     html(){
@@ -305,10 +307,10 @@ class MagicModal{
 
     htmlModalButtons(){
         return '\
-        <button type="button" class="magic-modal-refresh btn-default btn btn-outline-secondary btn-rounded">\
+        <button type="button" class="' + this.id + '-refresh btn-default btn btn-outline-secondary btn-rounded">\
             <i class="fa fa-refresh ti-reload"></i>\
         </button>\
-        <button type="button" class= "magic-modal-close btn-default btn btn-outline-secondary btn-rounded">\
+        <button type="button" class= "' + this.id + '-close btn-default btn btn-outline-secondary btn-rounded">\
             <i class="fa fa-close ti-close"></i>\
         </button>'
     }
@@ -400,7 +402,7 @@ function MagicModalInit(e) {
     e.preventDefault();
     $(this).blur();
 
-    let name = (_name = $(this).attr('magic-modal-name')) === undefined || _name === '' ? createId() : _name;
+    let name = (_name = $(this).attr('magic-modal-name')) === undefined || _name === '' ? uniqueId() : _name;
     let url = (_url = $(this).attr('href')) === undefined ? $(this).attr('url') : _url;
     let ajaxOptions = $(this).attr('ajaxOptions');
     let jsFunctions = $(this).attr('jsFunctions');
